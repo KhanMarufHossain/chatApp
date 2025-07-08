@@ -2,9 +2,12 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import ImageGallery from './ImageGallery';
 
 export default function Modale() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [showGallery, setShowGallery] = useState(false);
 
   const handleUploadFromComputer = async () => {
     setModalVisible(false);
@@ -26,28 +29,58 @@ export default function Modale() {
     });
 
     if (!result.canceled) {
-      // Handle the selected image
-      console.log(result.assets[0].uri);
-      // You can store this URI in state and display the image
+      // Add the selected image to the array
+      const newImageUri = result.assets[0].uri;
+      setSelectedImages(prevImages => [...prevImages, newImageUri]);
+      console.log('Image added:', newImageUri);
+      Alert.alert('Success', 'Image added to gallery!');
     }
   };
 
   const handleUploadFromCamera = () => {
-    
-    Alert.alert('Open Camera', 'This would open camera');
-    // Add your camera logic here
+    Alert.alert('Open Camera', 'Camera functionality coming soon!');
+    setModalVisible(false);
   };
+
+  const handleDeleteImage = (index) => {
+    setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
+  };
+
+  const handleViewGallery = () => {
+    setShowGallery(true);
+  };
+
+  if (showGallery) {
+    return (
+      <ImageGallery 
+        images={selectedImages}
+        onDeleteImage={handleDeleteImage}
+        onBack={() => setShowGallery(false)}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
-      
+      <Text style={styles.welcomeText}>Welcome to Image Picker</Text>
       
       <TouchableOpacity 
         style={styles.uploadButton}
         onPress={() => setModalVisible(true)}
       >
-        <Text style={styles.buttonText}>Upload</Text>
+        <Text style={styles.buttonText}>Upload Image</Text>
       </TouchableOpacity>
+
+      {selectedImages.length > 0 && (
+        <TouchableOpacity 
+          style={styles.galleryButton}
+          onPress={handleViewGallery}
+        >
+          <Text style={styles.galleryButtonText}>
+            View Gallery ({selectedImages.length})
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <Modal
         animationType="slide"
@@ -95,14 +128,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    color: '#333',
+  },
   uploadButton: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 10,
-    marginTop: 20,
+    marginBottom: 15,
   },
   buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  galleryButton: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 10,
+  },
+  galleryButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
