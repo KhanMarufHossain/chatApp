@@ -25,9 +25,9 @@ export default function MainScreen({ navigation }) {
       return;
     }
 
-    // Launch image picker
+    // Launch image picker - FIX THE DEPRECATION WARNING HERE
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'Images', // Use string instead of ImagePicker.MediaType.Images
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -43,28 +43,40 @@ export default function MainScreen({ navigation }) {
   };
 
   const handleUploadFromCamera = async () => {
+    console.log("Camera button pressed");
     setModalVisible(false);
     
-    // Request camera permission
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission Required", "You need to grant camera permission");
-      return;
-    }
+    try {
+      // Request camera permission
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      console.log("Camera permission result:", permissionResult);
+      
+      if (permissionResult.granted === false) {
+        Alert.alert("Permission Required", "You need to grant camera permission");
+        return;
+      }
 
-    // Launch camera
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+      // Launch camera - Use string instead of MediaType enum
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: 'Images', // Use string instead of ImagePicker.MediaType.Images
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      const newImageUri = result.assets[0].uri;
-      setSelectedImages(prevImages => [...prevImages, newImageUri]);
-      Alert.alert('Success', 'Image captured and added to gallery!');
+      console.log("Camera result:", result);
+
+      if (!result.canceled) {
+        const newImageUri = result.assets[0].uri;
+        setSelectedImages(prevImages => [...prevImages, newImageUri]);
+        console.log('Camera image added:', newImageUri);
+        Alert.alert('Success', 'Image captured and added to gallery!');
+      } else {
+        console.log("Camera was canceled");
+      }
+    } catch (error) {
+      console.log("Camera error:", error);
+      Alert.alert("Error", "Failed to open camera: " + error.message);
     }
   };
 
